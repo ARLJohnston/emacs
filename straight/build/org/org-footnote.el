@@ -1,0 +1,1 @@
+/home/alistair/.emacs.d/straight/repos/org/lisp/org-footnote.el
