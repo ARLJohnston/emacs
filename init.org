@@ -8,17 +8,47 @@
 
 * My Emacs Configuration
 
+** Org Mode Configuration
+Org mode allows for literate programming (like this document) and writing notes etc in a nice, structured way with multiple export options.
+#+BEGIN_SRC emacs-lisp
+	(straight-use-package 'org)
+	(setq org-src-preserve-indentation t)
+
+	(straight-use-package 'org-auto-tangle)
+	(add-hook 'org-mode-hook 'org-auto-tangle-mode)
+	(setq org-auto-tangle-default t)
+
+  (straight-use-package 'org-roam)
+  (setq org-roam-directory "~/org")
+
+  (with-eval-after-load 'evil-leader
+    (evil-leader/set-key "ni" 'org-roam-node-insert))
+
+  (setq org-roam-capture-templates
+    '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+title: ${title}\n")
+      :unnarrowed t
+      :jump-to-captured t)
+    ("m" "meeting" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "=================\n** Meeting %U\n:LOGBOOK:\n:END:\n Attendees:\n")
+      :unnarrowed t
+      :jump-to-captured t)))
+#+END_SRC
+
 ** Unorganised
 #+BEGIN_SRC emacs-lisp
   (setq ring-bell-function 'ignore)
   (setq-default tab-width 2)
   (setq-default flycheck-emacs-lisp-load-path 'inherit)
-  (set-face-attribute 'default nil :font "MonoLisa Nerd Font" 
+  (set-face-attribute 'default nil :font "MonoLisa Nerd Font")
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
   (setq display-line-numbers-type 'relative)
-  
   
   (require 'package)
   (add-to-list 'package-archives
@@ -49,86 +79,68 @@
                     :major-modes '(nix-mode)
                     :server-id 'nix))
   
-  (use-package nix-mode
+  (straight-use-package 'nix-mode
     :mode "\\.nix\\'")
   
   ;; haskell mode
-  (use-package haskell-mode
-  	:straight t
+  (straight-use-package 'haskell-mode
   	:config
   	(add-hook 'haskell-mode-hook 'interactive-haskell-mode))
   
   (add-to-list 'load-path "~/.emacs.d/lsp/")
-  (require 'promela-mode)
-  (add-to-list 'auto-mode-alist '("\\.pml\\'" . promela-mode))
 #+END_SRC
 
 ** Evil Mode Configuration
 #+BEGIN_SRC emacs-lisp
-  (evil-mode 1)
-  (use-package evil
-  	:straight t
-  	:ensure t)
+(evil-mode 1)
+(use-package evil
+	:straight t
+	:ensure t)
 
-  (add-to-list 'load-path "~/.emacs.d/evil/")
-  (use-package evil-leader)
-  (global-evil-leader-mode)
-  (evil-leader/set-leader "<SPC>")
-  (evil-leader/set-key "." 'fzf-find-file)
-  (evil-leader/set-key "bi" 'fzf-switch-buffer)
+(use-package undo-tree
+	:straight t
+	:ensure t)
+(global-undo-tree-mode)
+
+(setq evil-undo-system 'undo-tree)
+
+
+(add-to-list 'load-path "~/.emacs.d/evil/")
+(straight-use-package 'evil-leader)
+(global-evil-leader-mode)
+(evil-leader-mode 1)
+(evil-leader/set-leader "<SPC>")
+(evil-leader/set-key "." 'fzf-find-file)
+(evil-leader/set-key "bi" 'fzf-switch-buffer)
+(evil-leader/set-key "bk" 'kill-this-buffer)
+(evil-leader/set-key "bm" 'buffer-menu)
 #+END_SRC
 
-** Org Mode Configuration
-#+BEGIN_SRC emacs-lisp
-	(use-package org
-		:straight t
-		:ensure t)
-
-	(setq org-src-preserve-indentation t)
-
-  (require 'org-auto-tangle)
-  (add-hook 'org-mode-hook 'org-auto-tangle-mode)
-	(setq org-auto-tangle-default t))
-#+END_SRC
 
 ** FZF Configuration
 #+BEGIN_SRC emacs-lisp
-	(use-package fzf
-    :bind
-    ;; Don't forget to set keybinds!
-    :config
-    (setq fzf/args "-x --tabstop 2 --color dark --print-query --margin=1,0 --no-hscroll"
-        fzf/executable "fzf"
-        fzf/git-grep-args "-i --line-number %s"
-        ;; command used for `fzf-grep-*` functions
-        ;; example usage for ripgrep:
-        ;; fzf/grep-command "rg --no-heading -nH"
-        fzf/grep-command "grep -nrH"
-        ;; If nil, the fzf buffer will appear at the top of the window
-        fzf/position-bottom t
-        fzf/window-height 15))
+(straight-use-package 'fzf
+  :bind
+  ;; Don't forget to set keybinds!
+  :config
+  (setq fzf/args "-x --tabstop 2 --color dark --print-query --margin=1,0 --no-hscroll"
+      fzf/executable "fzf"
+      fzf/git-grep-args "-i --line-number %s"
+      ;; command used for `fzf-grep-*` functions
+      ;; example usage for ripgrep:
+      ;; fzf/grep-command "rg --no-heading -nH"
+      fzf/grep-command "grep -nrH"
+      ;; If nil, the fzf buffer will appear at the top of the window
+      fzf/position-bottom t
+      fzf/window-height 15))
 #+END_SRC
 
 ** Company
 Globally offer auto completion functionality.
 #+BEGIN_SRC emacs-lisp
-(use-package company
-	:straight t
+(straight-use-package 'company
 	:config
 	(setq company-idle-delay 0)
 	(setq company-minimum-prefix-length 1)
 	(global-company-mode t))
-#+END_SRC
-
-** Ellama
-#+BEGIN_SRC emacs-lisp
-(use-package llm-ollama)
-
-(use-package ellama
-  :init
-  (setopt ellama-language "English")
-  (require 'llm-ollama)
-  (setopt ellama-provider
-		  (make-llm-ollama
-		   :chat-model "zephyr:7b-alpha-q5_K_M" :embedding-model "zephyr:7b-alpha-q5_K_M")))
 #+END_SRC
