@@ -1,120 +1,117 @@
-(setq ring-bell-function 'ignore)
-;; set tab indent to 2 spaces
-(setq-default tab-width 2)
-;; apply linting on save
-(setq-default flycheck-emacs-lisp-load-path 'inherit)
-;;set default font to MonoLisa Nerd Font with size 14
-(set-face-attribute 'default nil :font "MonoLisa Nerd Font" :height 100)
-(set-frame-parameter nil 'alpha-background 70)
+	(straight-use-package 'org)
+	(setq org-src-preserve-indentation t)
 
-(add-to-list 'default-frame-alist '(alpha-background . 70))
+	(straight-use-package 'org-auto-tangle)
+	(add-hook 'org-mode-hook 'org-auto-tangle-mode)
+	(setq org-auto-tangle-default t)
 
-(defun toggle-transparency ()
-   (interactive)
-   (let ((alpha (frame-parameter nil 'alpha)))
-     (set-frame-parameter
-      nil 'alpha
-      (if (eql (cond ((numberp alpha) alpha)
-                     ((numberp (cdr alpha)) (cdr alpha))
-                     ;; Also handle undocumented (<active> <inactive>) form.
-                     ((numberp (cadr alpha)) (cadr alpha)))
-               100)
-          '(85 . 50) '(100 . 100)))))
- (global-set-key (kbd "C-c t") 'toggle-transparency)
+  (straight-use-package 'org-superstar)
+	(add-hook 'org-mode-hook 'org-superstar-mode)
 
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+    (haskell . t)))
 
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(global-display-line-numbers-mode 1)
-(setq display-line-numbers-type 'relative)
+  (straight-use-package 'org-roam)
+  (setq org-roam-directory "~/org")
 
-(add-to-list 'custom-theme-load-path "~/emacs.d/themes/")
-(load-theme 'zenburn t)
+  (with-eval-after-load 'evil-leader
+    (evil-leader/set-key "ni" 'org-roam-node-insert))
 
-(require 'package)
-(add-to-list 'package-archives
-  '("melpa" . "https://melpa.org/packages/"))
-(package-initialize)
-(package-refresh-contents)
+  (setq org-roam-capture-templates
+    '(("d" "default" plain
+      "%?"
+      :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
+                         "#+title: ${title}\n")
+      :unnarrowed t
+      :jump-to-captured t)
+    ("m" "meeting" plain
+      "%?"
+      :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
+                         "=================\n** Meeting %U\n:LOGBOOK:\n:END:\n Attendees:\n")
+      :unnarrowed t
+      :jump-to-captured t)))
 
+  (setq ring-bell-function 'ignore)
+  (setq-default tab-width 2)
+  (setq-default flycheck-emacs-lisp-load-path 'inherit)
+  (set-face-attribute 'default nil :font "MonoLisa Nerd Font")
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (global-display-line-numbers-mode 1)
+  (setq display-line-numbers-type 'relative)
+  
+  ;;(require 'package)
+  ;;(add-to-list 'package-archives
+  ;;  '("melpa" . "https://melpa.org/packages/"))
+  ;;(package-initialize)
+  ;;(package-refresh-contents)
+  
+  (load-theme 'zenburn t)
+  
+  (unless (package-installed-p 'editorconfig)
+    (package-install 'editorconfig))
+  
+  (use-package copilot
+    :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+    :ensure t)
+  (add-hook 'prog-mode-hook 'copilot-mode)
+  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+  
+  ;; Install magit 
+  (straight-use-package 'magit)
+  
+  ;;lsp mode
+  ;;(straight-use-package 'lsp-mode)
+  ;;(add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
+;;
+  ;;(lsp-register-client
+    ;;(make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
+                    ;;:major-modes '(nix-mode)
+                    ;;:server-id 'nix))
+ ;; 
+  ;;(straight-use-package 'nix-mode
+    ;;:mode "\\.nix\\'")
+  (straight-use-package 'lsp-mode)
 
-(unless (package-installed-p 'editorconfig)
-  (package-install 'editorconfig))
+  (straight-use-package 'lsp-haskell)
+  (add-hook 'haskell-mode-hook #'lsp)
+  (add-hook 'haskell-literate-mode-hook #'lsp)
 
-;;Install Straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-  (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-    (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-      (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-        'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+  ;;(add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
+  ;;(lsp-register-client
+  ;; (make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
+  ;;                  :major-modes '(nix-mode)
+  ;;                  :server-id 'nix))
+  
+  ;; haskell mode
+  (straight-use-package 'haskell-mode)
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  
+  ;;(add-to-list 'load-path "~/.emacs.d/lsp/")
 
-(use-package copilot
-  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-  :ensure t)
-(add-hook 'prog-mode-hook 'copilot-mode)
-(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-
-;; install org mode with straight.el
-(straight-use-package 'org)
-(require 'org)
-
+(straight-use-package 'evil)
 (evil-mode 1)
-(use-package evil
-	:straight t
-	:ensure t)
 
-(add-to-list 'load-path "~/.emacs.d/evil/")
-(use-package evil-leader)
-(global-evil-leader-mode)
+;;(add-to-list 'load-path "~/.emacs.d/evil/")
+
+(straight-use-package 'evil-leader)
+
+(evil-leader-mode 1)
+
 (evil-leader/set-leader "<SPC>")
-(evil-leader/set-key "." 'find-file)
+(evil-leader/set-key "." 'fzf-find-file)
+(evil-leader/set-key "bi" 'fzf-switch-buffer)
+(evil-leader/set-key "bk" 'kill-this-buffer)
+(evil-leader/set-key "bm" 'buffer-menu)
 
-(straight-use-package 'emacs-everywhere)
+(straight-use-package 'fzf)
 
-;; Install magit 
-(straight-use-package 'magit)
+(straight-use-package 'company)
+	;;:config
+(setq company-idle-delay 0)
+(setq company-minimum-prefix-length 1)
+(global-company-mode t)
 
-;;lsp mode
-(use-package lsp-mode
-	:straight t)
-(add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
-(lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
-                  :major-modes '(nix-mode)
-                  :server-id 'nix))
 
-(use-package nix-mode
-  :mode "\\.nix\\'")
-
-;;Tree sitter
-(use-package tree-sitter
-	:straight t
-	:config
-	(require 'tree-sitter-langs)
-	(global-tree-sitter-mode)
-	(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(add-to-list 'load-path "~/elisp-tree-sitter/core")
-(add-to-list 'load-path "~/elisp-tree-sitter/lisp")
-(add-to-list 'load-path "~/elisp-tree-sitter/langs")
-
-(require 'tree-sitter)
-(require 'tree-sitter-hl)
-(require 'tree-sitter-langs)
-(require 'tree-sitter-debug)
-(require 'tree-sitter-query)
-
-(global-tree-sitter-mode)
-
-;; haskell mode
-(use-package haskell-mode
-	:straight t
-	:config
-	(add-hook 'haskell-mode-hook 'interactive-haskell-mode))
