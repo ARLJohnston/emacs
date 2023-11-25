@@ -8,6 +8,8 @@
   (straight-use-package 'org-superstar)
 	(add-hook 'org-mode-hook 'org-superstar-mode)
 
+  (straight-use-package 'htmlize)
+
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -33,85 +35,74 @@
       :unnarrowed t
       :jump-to-captured t)))
 
-  (setq ring-bell-function 'ignore)
-  (setq-default tab-width 2)
-  (setq-default flycheck-emacs-lisp-load-path 'inherit)
-  (set-face-attribute 'default nil :font "MonoLisa Nerd Font")
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (global-display-line-numbers-mode 1)
-  (setq display-line-numbers-type 'relative)
-  
-  ;;(require 'package)
-  ;;(add-to-list 'package-archives
-  ;;  '("melpa" . "https://melpa.org/packages/"))
-  ;;(package-initialize)
-  ;;(package-refresh-contents)
-  
-  (load-theme 'zenburn t)
-  
-  (unless (package-installed-p 'editorconfig)
-    (package-install 'editorconfig))
-  
-  (use-package copilot
-    :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-    :ensure t)
-  (add-hook 'prog-mode-hook 'copilot-mode)
-  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-  
-  ;; Install magit 
-  (straight-use-package 'magit)
-  
-  ;;lsp mode
-  ;;(straight-use-package 'lsp-mode)
-  ;;(add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
-;;
-  ;;(lsp-register-client
-    ;;(make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
-                    ;;:major-modes '(nix-mode)
-                    ;;:server-id 'nix))
- ;; 
-  ;;(straight-use-package 'nix-mode
-    ;;:mode "\\.nix\\'")
-  (straight-use-package 'lsp-mode)
+(setq ring-bell-function 'ignore)
+(setq-default tab-width 2)
+(setq-default flycheck-emacs-lisp-load-path 'inherit)
+(set-face-attribute 'default nil :font "MonoLisa Nerd Font")
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(global-display-line-numbers-mode 1)
+(setq display-line-numbers-type 'relative)
 
-  (straight-use-package 'lsp-haskell)
-  (add-hook 'haskell-mode-hook #'lsp)
-  (add-hook 'haskell-literate-mode-hook #'lsp)
+(load-theme 'zenburn t)
 
-  ;;(add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
-  ;;(lsp-register-client
-  ;; (make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
-  ;;                  :major-modes '(nix-mode)
-  ;;                  :server-id 'nix))
-  
-  ;; haskell mode
-  (straight-use-package 'haskell-mode)
-  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-  
-  ;;(add-to-list 'load-path "~/.emacs.d/lsp/")
+(unless (package-installed-p 'editorconfig)
+  (package-install 'editorconfig))
+
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :ensure t)
+
+(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+
+;; Install magit 
+(straight-use-package 'magit)
+
+;;lsp mode
+(straight-use-package 'lsp-mode)
+
+(straight-use-package 'lsp-haskell)
+(add-hook 'haskell-mode-hook #'lsp)
+(add-hook 'haskell-literate-mode-hook #'lsp)
+
+;; haskell mode
+(straight-use-package 'haskell-mode)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+
+;;Evil-collection requirement
+(setq evil-want-integration t)
+(setq evil-want-keybinding nil)
 
 (straight-use-package 'evil)
 (evil-mode 1)
+
+(straight-use-package 'evil-collection)
+(evil-collection-init)
 
 ;;(add-to-list 'load-path "~/.emacs.d/evil/")
 
 (straight-use-package 'evil-leader)
 
-(evil-leader-mode 1)
+(global-evil-leader-mode 1)
 
 (evil-leader/set-leader "<SPC>")
 (evil-leader/set-key "." 'fzf-find-file)
 (evil-leader/set-key "bi" 'fzf-switch-buffer)
 (evil-leader/set-key "bk" 'kill-this-buffer)
 (evil-leader/set-key "bm" 'buffer-menu)
+(evil-leader/set-key "w" '(execute-kbd-macro (kbd "C-w")))
 
 (straight-use-package 'fzf)
 
 (straight-use-package 'company)
-	;;:config
 (setq company-idle-delay 0)
 (setq company-minimum-prefix-length 1)
 (global-company-mode t)
 
+;;(straight-use-package '(emacs-application-framework :host github :repo "manateelazycat/emacs-application-framework" :files ("*")))
 
+;;(straight-use-package 'pdf-tools)
+;;  (add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1))
+;;
+;;(pdf-loader-install)
