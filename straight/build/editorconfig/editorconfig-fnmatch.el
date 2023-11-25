@@ -1,1 +1,0 @@
-/home/alistair/.emacs.d/straight/repos/editorconfig-emacs/editorconfig-fnmatch.el
