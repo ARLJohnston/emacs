@@ -128,16 +128,11 @@ Globally offer auto completion functionality.
 (global-company-mode t)
 #+END_SRC
 
-** EAF for PDFs
-#+BEGIN_SRC emacs-lisp
-;;(straight-use-package '(emacs-application-framework :host github :repo "manateelazycat/emacs-application-framework" :files ("*")))
-#+END_SRC
-
 ** PDF-Tools
 #+BEGIN_SRC emacs-lisp
-;;(straight-use-package 'pdf-tools)
-;;  (add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1))
-;;
-;;(pdf-loader-install)
+(straight-use-package 'pdf-tools)
+(add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1)))
+
+(pdf-loader-install)
 #+END_SRC
 

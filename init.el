@@ -100,9 +100,7 @@
 (setq company-minimum-prefix-length 1)
 (global-company-mode t)
 
-;;(straight-use-package '(emacs-application-framework :host github :repo "manateelazycat/emacs-application-framework" :files ("*")))
+(straight-use-package 'pdf-tools)
+(add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1)))
 
-;;(straight-use-package 'pdf-tools)
-;;  (add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1))
-;;
-;;(pdf-loader-install)
+(pdf-loader-install)
