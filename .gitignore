@@ -5,4 +5,8 @@
 !*.el
 !init.org
 !LICENSE
+!.github
 !.github/*
+!themes
+!themes/*
+
