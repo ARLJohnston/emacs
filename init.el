@@ -45,6 +45,18 @@
     :unnarrowed t
     :jump-to-captured t)))
 
+(straight-use-package 'nord-theme)
+(load-theme 'nord t)
+
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (select-frame frame)
+            (load-theme 'nord t)))
+
+;; Less Jumpy scrolling
+(setq scroll-step 1)
+(setq scroll-margin 4)
+
 (setq ring-bell-function 'ignore)
 (setq-default tab-width 2)
 (setq-default flycheck-emacs-lisp-load-path 'inherit)
@@ -54,15 +66,6 @@
 (scroll-bar-mode -1)
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type 'relative)
-
-;;(load-theme 'zenburn t)
-
-(straight-use-package 'nano-theme)
-(setq nano-font-family-monospaced "MonoLisa Nerd Font")
-(load-theme 'nano-dark t)
-
-;;(straight-use-package 'nord-theme)
-(add-hook 'after-init-hook (lambda () (load-theme 'nord t)))
 
 (unless (package-installed-p 'editorconfig)
   (package-install 'editorconfig))
@@ -89,10 +92,6 @@
 ;; haskell mode
 (straight-use-package 'haskell-mode)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-  
-;; Less Jumpy
-(setq scroll-step 1)
-(setq scroll-margin 4)
 
 (setq backup-directory-alist '((".*" . "~/.backups/")))
 
