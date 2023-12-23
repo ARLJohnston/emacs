@@ -41,7 +41,7 @@
   ("m" "meeting" plain
     "%?"
     :if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
-                       "=================\n** Meeting %U\n:LOGBOOK:\n:END:\n Attendees:\n")
+                       "=================\n** Meeting %U\nAttendees:\n")
     :unnarrowed t
     :jump-to-captured t)))
 
