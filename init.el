@@ -45,6 +45,10 @@
     :unnarrowed t
     :jump-to-captured t)))
 
+(setq org-todo-keywords
+      '((sequence "TODO" "IN-PROGRESS" "DONE")))
+(setq org-clock-in-switch-to-state "IN-PROGRESS")
+
 (straight-use-package 'nord-theme)
 (load-theme 'nord t)
 
@@ -57,15 +61,16 @@
 (setq scroll-step 1)
 (setq scroll-margin 4)
 
-(setq ring-bell-function 'ignore)
-(setq-default tab-width 2)
-(setq-default flycheck-emacs-lisp-load-path 'inherit)
 (set-face-attribute 'default nil :font "MonoLisa Nerd Font")
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type 'relative)
+(setq-default tab-width 2)
+
+(setq ring-bell-function 'ignore)
+(setq-default flycheck-emacs-lisp-load-path 'inherit)
 
 (unless (package-installed-p 'editorconfig)
   (package-install 'editorconfig))
@@ -77,8 +82,7 @@
 (add-hook 'prog-mode-hook 'copilot-mode)
 (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 
-;; Install magit 
-(straight-use-package 'magit)
+(straight-use-package 'spray)
 
 ;;lsp mode
 (straight-use-package 'lsp-mode)
@@ -108,6 +112,11 @@
 (straight-use-package 'evil-leader)
 (global-evil-leader-mode 1)
 
+(straight-use-package 'undo-tree)
+(global-undo-tree-mode 1)
+(evil-set-undo-system 'undo-tree)
+(setq undo-tree-history-directory-alist '((".*" . "~/.backups/")))
+
 (evil-leader/set-leader "<SPC>")
 
 (evil-leader/set-key "." 'fzf-find-file)
@@ -116,7 +125,7 @@
 (evil-leader/set-key "bk" 'kill-this-buffer)
 (evil-leader/set-key "bm" 'buffer-menu)
 
-(evil-leader/set-key "w" '(lambda () (interactive) execute-kbd-macro (read-kbd-macro "C-w")))
+;;(evil-leader/set-key "w" '(lambda () (interactive) execute-kbd-macro (read-kbd-macro "C-w")))
 
 (evil-leader/set-key "ci" 'org-clock-in)
 (evil-leader/set-key "co" 'org-clock-out)
@@ -128,6 +137,22 @@
 (dired-preview-global-mode 1)
 
 (straight-use-package 'fzf)
+
+(straight-use-package 'magit)
+
+(use-package blamer
+  :straight (:host github :repo "artawower/blamer.el")
+  :bind (("s-i" . blamer-show-commit-info))
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t :foreground "#81a1c1"
+                    :background nil
+                    :height 100
+                    :italic t)))
+  :config
+  (global-blamer-mode 1))
 
 (straight-use-package 'company)
 (setq company-idle-delay 0)
