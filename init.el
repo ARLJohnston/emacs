@@ -81,7 +81,9 @@
 (scroll-bar-mode -1)
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers-type 'relative)
-(setq-default tab-width 2)
+(setq default-tab-width 2)
+(electric-indent-mode -1)
+(setq tab-always-indent 'complete)
 
 (use-package rainbow-delimiters
   :init
@@ -114,7 +116,7 @@
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
   :init
-  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+;;  (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 )
 
 ;;(add-hook 'prog-mode-hook 'copilot-mode)
@@ -126,6 +128,7 @@
 (use-package flycheck-grammarly
   :init
   (flycheck-grammarly-setup)
+  (setq flycheck-grammarly-check-time 0.8)
 )
 (use-package flycheck-haskell)
 
@@ -139,6 +142,7 @@
 (use-package lsp-ui
   :init
   (setq lsp-ui-doc-position 'bottom)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 )
 
 (use-package lsp-haskell
@@ -234,14 +238,15 @@
 										:background nil
 										:height 100
 										:italic t)))
-	:config
-	(global-blamer-mode 1))
+;;	:config
+;;	(global-blamer-mode 1))
 
 (use-package company
   :init
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
   (global-company-mode t)
+  (setq company-dabbrev-downcase nil)
 )
 
 (use-package pdf-tools
@@ -289,8 +294,11 @@
 ;;(lsp-inlay-hint-enable t)
 ;;(lsp-rust-analyzer-display-chaining-hints t)
 ;;(lsp-rust-analyzer-display-closure-return-type-hints t)
+(use-package rust-mode)
 
-(use-package lsp-ui
+(use-package erlang)
+(use-package erlang-mode
   :init
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  (setq erlang-indent-level 2)
 )
+(setq erlang-indent-level 2)
