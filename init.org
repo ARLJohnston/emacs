@@ -252,7 +252,6 @@ Org mode allows for literate programming (like this document) and writing notes 
 	(global-evil-leader-mode 1)
 	(evil-leader/set-leader "<SPC>")
 	(evil-leader/set-key
-		"." 'fzf-find-file
 		"bi" 'fzf-switch-buffer
 		"bk" 'kill-this-buffer
 		"bm" 'buffer-menu
@@ -295,9 +294,19 @@ Org mode allows for literate programming (like this document) and writing notes 
 )
 #+END_SRC
 
-** FZF Configuration
+** Movement
 #+BEGIN_SRC emacs-lisp
 (use-package fzf)
+
+(use-package zoxide
+	:init
+	(evil-leader/set-key "." 'zoxide-travel-with-query)
+)
+
+(use-package avy
+	:init
+	(keymap-global-set "C-;" 'avy-goto-char)
+)
 #+END_SRC
 
 ** Git integration
@@ -325,8 +334,7 @@ Org mode allows for literate programming (like this document) and writing notes 
 )
 #+END_SRC
 
-** Company
-Globally offer auto completion functionality.
+** Completion
 #+BEGIN_SRC emacs-lisp
 (use-package company
 	:init

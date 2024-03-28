@@ -225,7 +225,6 @@
 	(global-evil-leader-mode 1)
 	(evil-leader/set-leader "<SPC>")
 	(evil-leader/set-key
-		"." 'fzf-find-file
 		"bi" 'fzf-switch-buffer
 		"bk" 'kill-this-buffer
 		"bm" 'buffer-menu
@@ -263,6 +262,16 @@
 )
 
 (use-package fzf)
+
+(use-package zoxide
+	:init
+	(evil-leader/set-key "." 'zoxide-travel-with-query)
+)
+
+(use-package avy
+	:init
+	(keymap-global-set "C-;" 'avy-goto-char)
+)
 
 (use-package magit)
 
