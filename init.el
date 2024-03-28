@@ -16,13 +16,13 @@
 (use-package spray)
 
 (use-package flycheck)
-(use-package flycheck-haskell)
 
 (use-package imenu-list
 	:init
 	(setq imenu-list-focus-after-activation t)
 )
 
+;;Better autocomplete
 (use-package vertico
 	:custom
 	(vertico-count 13)
@@ -36,8 +36,20 @@
 		completion-ignore-case t)
 )
 
+(desktop-save-mode 1)
+;; Persist history over Emacs restarts. Vertico sorts by history position.
+(use-package savehist
+	:init
+	(savehist-mode))
 
-;;lsp mode
+;; Emacs 28 and newer: Hide commands in M-x which do not work in the current mode.  Vertico commands are hidden in normal buffers. This setting is useful beyond Vertico.
+(setq read-extended-command-predicate #'command-completion-default-include-p)
+
+
+(setq backup-directory-alist '((".*" . "~/.backups/")))
+
+(use-package yaml-mode)
+
 (use-package lsp-mode
 	:init
 	(keymap-global-set "M-RET" 'lsp-execute-code-action)
@@ -48,22 +60,6 @@
 	(setq lsp-ui-doc-position 'bottom)
 	(add-hook 'lsp-mode-hook 'lsp-ui-mode)
 )
-
-(use-package lsp-haskell
-	:init
-	(add-hook 'haskell-mode-hook #'lsp)
-	(add-hook 'haskell-literate-mode-hook #'lsp)
-)
-
-;; haskell mode
-(use-package haskell-mode
-	:init
-	(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-)
-
-(setq backup-directory-alist '((".*" . "~/.backups/")))
-
-(use-package yaml-mode)
 
 (use-package org
 	:init
@@ -135,6 +131,27 @@
 		(lambda (frame)
 			(select-frame frame)
 			(load-theme 'solarized-gruvbox-dark t)))
+)
+
+(use-package doom-modeline
+	:ensure t
+	:init
+		(doom-modeline-mode 1)
+	:custom
+		(doom-modeline-icon nil)
+		(doom-modeline-height 1)
+		(doom-modeline-bar-width 1)
+		(doom-modeline-buffer-file-name-style 'truncate-upto-project)
+		(doom-modeline-minor-modes nil)
+		;;(doom-modeline-enable-word-count nil)
+		(doom-modeline-buffer-encoding t)
+		(doom-modeline-indent-info nil)
+		(doom-modeline-checker-simple-format t)
+		(doom-modeline-vcs-max-length 12)
+		(doom-modeline-env-version t)
+		(doom-modeline-irc-stylize 'identity)
+		(doom-modeline-github-timer nil)
+		(doom-modeline-gnus-timer nil)
 )
 
 ;; Less Jumpy scrolling
@@ -238,8 +255,6 @@
 	(setq undo-tree-visualizer-timestamps t)
 )
 
-
-
 ;;(evil-leader/set-key "w" '(lambda () (interactive) execute-kbd-macro (read-kbd-macro "C-w")))
 
 (use-package dired-preview
@@ -323,6 +338,17 @@
 	(add-hook 'before-save-hook 'gofmt-before-save)
 )
 
+(use-package go-playground
+	:init
+	(defun my/go-playground-remove-lsp-workspace () (when-let ((root (lsp-workspace-root))) (lsp-workspace-folders-remove root)))
+	(add-hook 'go-playground-pre-rm-hook #'my/go-playground-remove-lsp-workspace)
+)
+
+(use-package gorepl-mode
+	:init
+	(add-hook 'go-mode-hook #'gorepl-mode)
+)
+
 (use-package yasnippet
 	:init
 	(setq yas-snippet-dirs
@@ -334,3 +360,17 @@
 
 	(keymap-global-set "M-s" 'yas-insert-snippet)
 )
+
+(use-package lsp-haskell
+	:init
+	(add-hook 'haskell-mode-hook #'lsp)
+	(add-hook 'haskell-literate-mode-hook #'lsp)
+)
+
+;; haskell mode
+(use-package haskell-mode
+	:init
+	(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+)
+
+(use-package flycheck-haskell)
