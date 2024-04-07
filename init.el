@@ -6,11 +6,10 @@
 
 (use-package copilot
 	:straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-	:ensure t
-	:init
-	(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+	:defer t
+	;; :init
+	;; (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 )
-;;(Add-hook 'prog-mode-hook 'copilot-mode)
 
 ;; Read at high WPM
 (use-package spray)
@@ -37,6 +36,7 @@
 )
 
 (desktop-save-mode 1)
+(setq desktop-load-locked-desktop t)
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 (use-package savehist
 	:init
@@ -53,6 +53,8 @@
 (use-package lsp-mode
 	:init
 	(keymap-global-set "M-RET" 'lsp-execute-code-action)
+;;Modes
+	(add-hook 'nix-mode-hook #'lsp)
 )
 
 (use-package lsp-ui
@@ -124,19 +126,39 @@
 	(org-sort-entries nil ?o)
 	(org-sort-entries nil ?o))
 
-(use-package solarized-theme
-	:init
-	(load-theme 'solarized-gruvbox-dark t)
-	(add-hook 'after-make-frame-functions
-		(lambda (frame)
-			(select-frame frame)
-			(load-theme 'solarized-gruvbox-dark t)))
-)
+(defun org-agenda-sort-headers ()
+	"Sort each header in the current buffer."
+	(interactive)
+	(org-map-entries (lambda () (org-sort-entries nil ?o)) nil 'tree))
+
+(add-hook 'before-save-hook #'org-agenda-sort-headers)
+
+;; (use-package solarized-theme
+;;		:init
+;;		(load-theme 'solarized-gruvbox-dark t)
+;;		(add-hook 'after-make-frame-functions
+;;			(lambda (frame)
+;;				(select-frame frame)
+;;				(load-theme 'solarized-gruvbox-dark t)))
+;; )
+
+(add-to-list 'custom-theme-load-path "~/.emacs.d/everforest-emacs")
+(load-file "~/.emacs.d/everforest-emacs/everforest-hard-dark-theme.el")
+(load-theme 'everforest-hard-dark t)
+
+;; (use-package everforest
+	;; :straight (everforest :type git
+											;; :host nil
+											;; :repo "https://git.sr.ht/~theorytoe/everforest-theme")
+	;; :init
+	;; (load-theme 'everforest-hard-dark t)
+;; )
 
 (use-package doom-modeline
 	:ensure t
 	:init
 		(doom-modeline-mode 1)
+		(display-battery-mode)
 	:custom
 		(doom-modeline-icon nil)
 		(doom-modeline-height 1)
@@ -219,7 +241,6 @@
 	(evil-collection-init)
 )
 
-;;(straight-use-package evil-leader)
 (use-package evil-leader
 	:init
 	(global-evil-leader-mode 1)
@@ -293,6 +314,7 @@
 		100
 	:italic
 		t)))
+	:defer t
 )
 
 (use-package company
@@ -345,17 +367,20 @@
 	:init
 	(setq compile-command "go test -v")
 	(add-hook 'before-save-hook 'gofmt-before-save)
+	(add-hook 'go-mode-hook #'lsp)
 )
 
 (use-package go-playground
 	:init
 	(defun my/go-playground-remove-lsp-workspace () (when-let ((root (lsp-workspace-root))) (lsp-workspace-folders-remove root)))
 	(add-hook 'go-playground-pre-rm-hook #'my/go-playground-remove-lsp-workspace)
+	:defer t
 )
 
 (use-package gorepl-mode
 	:init
 	(add-hook 'go-mode-hook #'gorepl-mode)
+	:defer t
 )
 
 (use-package yasnippet
@@ -363,23 +388,27 @@
 	(setq yas-snippet-dirs
 		'("~/Documents/yasnippet-golang")
 	)
-	(yas-reload-all)
-	(yas-minor-mode-on)
 	(yas-global-mode 1)
 
 	(keymap-global-set "M-s" 'yas-insert-snippet)
 )
 
+(yas-minor-mode-on)
+
 (use-package lsp-haskell
 	:init
 	(add-hook 'haskell-mode-hook #'lsp)
 	(add-hook 'haskell-literate-mode-hook #'lsp)
+	:defer t
 )
 
 ;; haskell mode
 (use-package haskell-mode
 	:init
 	(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+	:defer t
 )
 
-(use-package flycheck-haskell)
+(use-package flycheck-haskell
+	:defer t
+)
