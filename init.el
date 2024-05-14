@@ -1,24 +1,139 @@
-(setq ring-bell-function 'ignore)
-(setq-default flycheck-emacs-lisp-load-path 'inherit)
+;;Install Straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+			 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+			(bootstrap-version 6))
+	(unless (file-exists-p bootstrap-file)
+		(with-current-buffer
+				(url-retrieve-synchronously
+				 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+				 'silent 'inhibit-cookies)
+			(goto-char (point-max))
+			(eval-print-last-sexp)))
+	(load bootstrap-file nil 'nomessage))
+
+;; (straight-use-package 'use-package)
+(require 'use-package)
+(require 'general)
+
+(use-package general
+  :config
+  (general-evil-setup t)
+  ;; Unbind other uses if key if defined (e.g. unbind evil-forward-char from SPC)
+  (general-auto-unbind-keys)
+  :ensure t
+  :demand t
+)
+
+(use-package emacs
+	:custom
+	(native-comp-speed 3)
+	(ring-bell-function 'ignore)
+	(initial-scratch-message 'nil)
+;; Emacs 28 and newer: Hide commands in M-x which do not work in the current mode
+	(read-extended-command-predicate #'command-completion-default-include-p)
+	(backup-directory-alist '((".*" . "~/.backups/")))
+;; Less Jumpy scrolling
+	(scroll-step 1)
+	(scroll-margin 4)
+	(display-line-numbers-type 'relative)
+	(default-tab-width 2)
+	(warning-minimum-level :error)
+	:init
+	(add-to-list 'custom-theme-load-path "~/.emacs.d/everforest-emacs")
+	(load-file "~/.emacs.d/everforest-emacs/everforest-hard-dark-theme.el")
+	(load-theme 'everforest-hard-dark t)
+	(set-face-attribute 'default nil :font "Iosevka Comfy")
+
+	(tool-bar-mode -1)
+	(menu-bar-mode -1)
+	(scroll-bar-mode -1)
+	(global-display-line-numbers-mode 1)
+  (save-place-mode 1)
+  (global-auto-revert-mode 1)
+  (recentf-mode)
+	(display-battery-mode)
+  (setq global-auto-revert-non-file-buffers t)
+	;;(electric-indent-mode -1)
+
+	(winner-mode 1)
+	(global-visual-line-mode)
+
+	:bind
+	("C-c h" . winner-undo)
+	("C-c l" . winner-redo)
+	("C-c c" . comment-or-uncomment-region)
+	("C-c /" . comment-or-uncomment-region)
+
+  :general
+  (general-nmap
+    :prefix "SPC"
+		"bk" 'kill-this-buffer
+		"bm" 'buffer-menu
+    "r" 'recentf
+  )
+  :diminish visual-line-mode
+)
+
+
+(use-package whitespace
+  :init
+  (global-whitespace-mode)
+  :custom
+  (whitespace-display-mappings
+   '(
+	  (tab-mark ?\t [#x00B7 #x00B7])
+	  (space-mark 32 [183] [46])
+	  (space-mark 160 [164] [95])
+    (newline-mark 10 [36 10])
+    )
+  )
+  (whitespace-style
+   '(
+     empty
+     face
+     newline
+     newline-mark
+     space-mark
+     spaces
+     tab-mark
+     tabs
+     trailing
+     )
+  )
+  :hook (before-save . whitespace-cleanup)
+  :ensure nil
+  :diminish whitespace-mode
+)
+
+(use-package casual-dired
+	:straight (:type git :host github :repo "kickingvegas/casual-dired")
+  :config
+  (general-define-key
+    :prefix "SPC"
+    :keymaps 'dired-mode-map
+   "o" 'casual-dired-tmenu
+  )
+)
+
+(use-package bind-key
+	:demand t)
 
 (unless (package-installed-p 'editorconfig)
 	(package-install 'editorconfig))
 
-(use-package copilot
-	:straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
-	:defer t
-	;; :init
-	;; (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+(use-package diminish
+	:ensure t
 )
-
-;; Read at high WPM
-(use-package spray)
-
-(use-package flycheck)
 
 (use-package imenu-list
 	:init
 	(setq imenu-list-focus-after-activation t)
+  :general
+  (general-nmap
+    :prefix "SPC"
+	"si" 'imenu-list-smart-toggle
+  )
 )
 
 ;;Better autocomplete
@@ -27,245 +142,245 @@
 	(vertico-count 13)
 	(vertico-resize t)
 	(vertico-cycle nil)
+	(read-file-name-completion-ignore-case t)
+	(read-buffer-completion-ignore-case t)
+	(completion-ignore-case t)
 	:config
 	(vertico-mode)
-	:init
-	(setq read-file-name-completion-ignore-case t
-		read-buffer-completion-ignore-case t
-		completion-ignore-case t)
+	:ensure t
 )
 
-(desktop-save-mode 1)
-(setq desktop-load-locked-desktop t)
+(use-package corfu
+	;; Optional customizations
+  :ensure t
+	:custom
+	(corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+	(corfu-auto t)                 ;; Enable auto completion
+	(corfu-separator ?\s)          ;; Orderless field separator
+	;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+	;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+	;; (corfu-preview-current nil)    ;; Disable current candidate preview
+	;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+	;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+	;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.2)
+  (corfu-popupinfo-delay '(0.4 . 0.2))
+  (corfu-echo-documentation t)
+  (ispell-alternate-dictionary "/run/current-system/sw/lib/aspell/en-common.rws")
+  :hook ((after-init . global-corfu-mode)
+	  (global-corfu-mode . corfu-popupinfo-mode))
+	:diminish corfu-mode
+)
+
+(use-package elfeed
+	:custom
+	(browse-url-browser-function 'eww-browse-url)
+	(elfeed-feeds
+		'(("https://xeiaso.net/blog.rss" nix)
+		 ("https://servo.org/blog/feed.xml" mis)
+		 ("https://ferd.ca/feed.rss" misc)
+		 ("https://samoa.dcs.gla.ac.uk/events/rest/Feed/rss/123" research)
+		 ("https://xkcd.com/rss.xml" misc)))
+  :general
+  (general-nmap
+    :prefix "SPC"
+   "e" 'elfeed
+  )
+	:defer t
+)
+
+(setq shr-max-image-proportion 0.5)
+
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 (use-package savehist
 	:init
-	(savehist-mode))
-
-;; Emacs 28 and newer: Hide commands in M-x which do not work in the current mode.  Vertico commands are hidden in normal buffers. This setting is useful beyond Vertico.
-(setq read-extended-command-predicate #'command-completion-default-include-p)
-
-
-(setq backup-directory-alist '((".*" . "~/.backups/")))
-
-(use-package yaml-mode)
-
-(use-package lsp-mode
-	:init
-	(keymap-global-set "M-RET" 'lsp-execute-code-action)
-;;Modes
-	(add-hook 'nix-mode-hook #'lsp)
+	(savehist-mode)
 )
 
-(use-package lsp-ui
-	:init
-	(setq lsp-ui-doc-position 'bottom)
-	(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+(use-package markdown-mode
+	:defer t
+	)
+
+(use-package eglot
+	:hook
+  (
+  (prog-mode . eglot-ensure)
+  ((c-mode c++-mode go-mode java-mode js-mode python-mode rust-mode web-mode) . eglot-ensure)
+  )
+  :config
+  (add-to-list 'eglot-server-programs '(gleam-mode . ("gleam" "lsp")))
+  (add-to-list 'eglot-server-programs '(rust-mode . ("rust-analyzer")))
+  :general
+  (general-nmap
+    :prefix "SPC"
+    :keymaps 'prog-mode-map
+   "lr" 'eglot-rename
+  )
+	:bind
+	("M-RET" . eglot-code-actions)
+  :demand t
 )
+
+;; Enable Corfu completion UI
+;; See the Corfu README for more configuration tips.
+(use-package corfu
+  :init
+  (global-corfu-mode)
+)
+
+
+(use-package eldoc
+	:init
+	(global-eldoc-mode))
+
+
+(use-package nix-mode
+	;;:hook
+	;;(before-save . nix-mode-format)
+	:defer t
+)
+
+(use-package yasnippet
+	:init
+	(yas-global-mode 1)
+	:bind
+	("M-s" . yas-insert-snippet)
+	:custom
+	(yas-snippet-dirs '("./snippets"))
+	:ensure t
+	:diminish yas-minor-mode
+	)
+
+(yas-minor-mode-on)
 
 (use-package org
-	:init
-	(setq org-src-preserve-indentation t)
-)
+	:custom
+	(org-src-preserve-indentation t)
+	(org-todo-keywords
+			'((sequence "TODO" "IN-PROGRESS" "DONE")))
+	(org-clock-in-switch-to-state "IN-PROGRESS")
+
+  (defun org-agenda-sort-at-point ()
+	  (interactive)
+	  (org-sort-entries nil ?o)
+	  (org-sort-entries nil ?o))
+
+  (defun org-agenda-sort-headers ()
+    "Sort each header in the current buffer."
+    (interactive)
+    (org-map-entries (lambda () (org-sort-entries nil ?o)) nil 'tree))
+
+  :general
+  (general-nmap
+    :prefix "SPC"
+    :keymaps 'org-mode-map
+		"co" 'org-clock-out
+		"cu" 'org-clock-update-time-maybe
+		"cs" 'org-agenda-sort-at-point
+  )
+	:ensure t
+	:hook
+  ;;(add-hook 'before-save-hook #'org-agenda-sort-headers)
+	(org-mode . flyspell-mode)
+	)
 
 (use-package org-auto-tangle
 	:init
-	(add-hook 'org-mode-hook 'org-auto-tangle-mode)
 	(setq org-auto-tangle-default t)
-)
+	:ensure t
+	:diminish org-auto-tangle-mode
+	:hook
+	(org-mode . org-auto-tangle-mode)
+	)
 
 (use-package org-sticky-header-mode
 	:straight (:type git :host github :repo "alphapapa/org-sticky-header")
-	:defer t
 	:init
 	(setq org-sticky-header-full-path 'full)
 	(setq org-sticky-header-outline-path-seperator " / ")
-	(add-hook 'org-mode-hook 'org-sticky-header-mode)
+	:hook
+	(org-mode . org-sticky-header-mode)
+	:defer t
 )
 
 (use-package org-superstar
-	:init
-	(add-hook 'org-mode-hook 'org-superstar-mode)
-	(setq org-hide-leading-stars t)
-	(setq org-superstar-leading-bullet ?\s)
-	(setq org-indent-mode-turns-on-hiding-stars nil)
-)
+	:custom
+	(org-hide-leading-stars t)
+	(org-superstar-leading-bullet ?\s)
+	(org-indent-mode-turns-on-hiding-stars nil)
+	:hook
+	(org-mode-hook . org-superstar-mode)
+	:defer t
+	)
 
 (use-package htmlize)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((emacs-lisp . t)
-	(haskell . t)))
+ '(
+	 (emacs-lisp . t)
+	 (haskell . t)
+	 (java . t)
+	 ))
 
-(use-package org-roam
-	:init
-	(setq org-roam-directory "~/org")
+;;(use-package org-roam
+;;	:init
+;;	(setq org-roam-directory "~/org")
+;;
+;;	(setq org-roam-capture-templates
+;;		'(("d" "default" plain
+;;			"%?"
+;;			:if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
+;;				"#+title: ${title}\n")
+;;			:unnarrowed t
+;;			:jump-to-captured t)
+;;		("m" "meeting" plain
+;;			"%?"
+;;			:if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
+;;				"=================\n** Meeting %U\nAttendees:\n")
+;;			:unnarrowed t
+;;			:jump-to-captured t)))
+;;)
 
-	(setq org-roam-capture-templates
-		'(("d" "default" plain
-			"%?"
-			:if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
-				"#+title: ${title}\n")
-			:unnarrowed t
-			:jump-to-captured t)
-		("m" "meeting" plain
-			"%?"
-			:if-new (file+head "${slug}-%<%Y%m%d%H%M%S>.org"
-				"=================\n** Meeting %U\nAttendees:\n")
-			:unnarrowed t
-			:jump-to-captured t)))
 
-	(setq org-todo-keywords
-		'((sequence "TODO" "IN-PROGRESS" "DONE")))
-	(setq org-clock-in-switch-to-state "IN-PROGRESS")
-)
-
-(defun org-agenda-sort-at-point ()
-		(interactive)
-	(org-sort-entries nil ?o)
-	(org-sort-entries nil ?o))
-
-(defun org-agenda-sort-headers ()
-	"Sort each header in the current buffer."
-	(interactive)
-	(org-map-entries (lambda () (org-sort-entries nil ?o)) nil 'tree))
-
-(add-hook 'before-save-hook #'org-agenda-sort-headers)
-
-;; (use-package solarized-theme
-;;		:init
-;;		(load-theme 'solarized-gruvbox-dark t)
-;;		(add-hook 'after-make-frame-functions
-;;			(lambda (frame)
-;;				(select-frame frame)
-;;				(load-theme 'solarized-gruvbox-dark t)))
-;; )
-
-(add-to-list 'custom-theme-load-path "~/.emacs.d/everforest-emacs")
-(load-file "~/.emacs.d/everforest-emacs/everforest-hard-dark-theme.el")
-(load-theme 'everforest-hard-dark t)
-
-;; (use-package everforest
-	;; :straight (everforest :type git
-											;; :host nil
-											;; :repo "https://git.sr.ht/~theorytoe/everforest-theme")
-	;; :init
-	;; (load-theme 'everforest-hard-dark t)
-;; )
-
-(use-package doom-modeline
+;;
+(use-package marginalia
+	:config
+	(marginalia-mode 1)
 	:ensure t
+)
+
+(use-package all-the-icons-completion
 	:init
-		(doom-modeline-mode 1)
-		(display-battery-mode)
-	:custom
-		(doom-modeline-icon nil)
-		(doom-modeline-height 1)
-		(doom-modeline-bar-width 1)
-		(doom-modeline-buffer-file-name-style 'truncate-upto-project)
-		(doom-modeline-minor-modes nil)
-		;;(doom-modeline-enable-word-count nil)
-		(doom-modeline-buffer-encoding t)
-		(doom-modeline-indent-info nil)
-		(doom-modeline-checker-simple-format t)
-		(doom-modeline-vcs-max-length 12)
-		(doom-modeline-env-version t)
-		(doom-modeline-irc-stylize 'identity)
-		(doom-modeline-github-timer nil)
-		(doom-modeline-gnus-timer nil)
+	(all-the-icons-completion-mode)
+	:hook
+	(marginalia-mode-hook . all-the-icons-completion-marginalia-setup)
 )
 
-;; Less Jumpy scrolling
-(setq scroll-step 1)
-(setq scroll-margin 4)
-
-(set-face-attribute 'default nil :font "MonoLisa Nerd Font")
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(global-display-line-numbers-mode 1)
-(setq display-line-numbers-type 'relative)
-(setq default-tab-width 2)
-(setq-default tab-width 2)
-(electric-indent-mode -1)
-
-(global-whitespace-mode)
-;; Default marks, but make tabs appear as two spaces
-(setq whitespace-display-mappings
-	'((space-mark 32
-							 [183]
-							 [46])
-	 (space-mark 160
-							 [164]
-							 [95])
-	 (newline-mark 10
-								 [36 10])
-	 (tab-mark 9
-						 [183 183]
-						 [95 95]))
-)
-(setq whitespace-style (delq 'lines whitespace-style))
-(setq whitespace-style (delq 'tabs whitespace-style))
-
-
-(add-hook 'before-save-hook #'whitespace-cleanup)
-
-(winner-mode 1)
-(keymap-global-set "C-c h" 'winner-undo)
-(keymap-global-set "C-c l" 'winner-redo)
-
-(keymap-global-set "C-c c" 'comment-or-uncomment-region)
-(keymap-global-set "C-c /" 'comment-or-uncomment-region)
-
-;;(keymap-global-set "g r" 'revert-buffer)
-
-(global-visual-line-mode)
-
-;; (require 'table)
-(setq warning-minimum-level :error)
 
 (use-package evil
-	:init
-	;;Evil-collection requirement
-	(setq evil-want-integration t)
-	(setq evil-want-keybinding nil)
+	:custom
+  (with-eval-after-load 'dired
+    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-find-file))
+	(evil-want-integration t)
+	(evil-want-keybinding nil)
+  (evil-want-C-u-scroll t)
 	:config
 	(evil-mode 1)
 	:hook
-	(after-init . evil-mode))
-
+	(after-init . evil-mode)
+	:ensure t
+	)
 
 (use-package evil-collection
-	:init
+	:config
 	(evil-collection-init)
-)
-
-(use-package evil-leader
-	:init
-	(global-evil-leader-mode 1)
-	(evil-leader/set-leader "<SPC>")
-	(evil-leader/set-key
-		"bi" 'fzf-switch-buffer
-		"bk" 'kill-this-buffer
-		"bm" 'buffer-menu
-		"ci" 'org-clock-in
-		"co" 'org-clock-out
-		"cu" 'org-clock-update-time-maybe
-		"cs" 'org-agenda-sort-at-point
-		"si" 'imenu-list-smart-toggle
-		"m" 'magit
-		;;EMMS
-		"es" 'toggle-emms
-		"el" 'emms-next
-		"eh" 'emms-previous
-		"ej" 'emms-volume-lower
-		"ek" 'emms-volume-raise
-		"ni" 'org-roam-node-insert)
-		(evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
-		(evil-define-key 'normal dired-mode-map (kbd "l") 'dired-find-file)
-		(evil-define-key 'normal 'global "gr" 'revert-buffer)
-)
+	:ensure t
+	:diminish evil-collection-unimpaired-mode
+  :after evil
+	)
 
 (use-package undo-tree
 	:init
@@ -273,142 +388,94 @@
 	(evil-set-undo-system 'undo-tree)
 	(setq undo-tree-history-directory-alist '(("." . "~/.backups/")))
 	(setq undo-tree-visualizer-timestamps t)
-)
+  (setq delete-old-versions t)
+  (setq kept-new-versions 6)
+  (setq kept-old-versions 2)
+	:ensure t
+	:diminish undo-tree-mode
+	:after evil
+	)
 
-;;(evil-leader/set-key "w" '(lambda () (interactive) execute-kbd-macro (read-kbd-macro "C-w")))
+(use-package vterm
+	:init
+	(keymap-global-set "s-<return>" 'vterm-other-window)
+	:defer t
+	)
+(keymap-global-set "s-c" 'calc)
 
 (use-package dired-preview
 	:init
 	(dired-preview-global-mode 1)
-)
+	)
 
-(use-package fzf)
+(use-package fzf
+  :general
+  (general-nmap
+   :prefix "SPC"
+   "bi" 'fzf-switch-buffer
+  )
+)
 
 (use-package zoxide
-	:init
-	(evil-leader/set-key "." 'zoxide-travel-with-query)
-)
+	:general
+	(general-nmap
+    :prefix "SPC"
+    "." 'zoxide-travel-with-query)
+	)
 
-(use-package avy
-	:init
-	(keymap-global-set "C-;" 'avy-goto-char)
-)
-
-(use-package magit)
-
-(use-package blamer
-	:straight (:host github :repo "artawower/blamer.el")
-	:init
-	(blamer-mode 1)
-	:bind
-		(("s-i" . blamer-show-commit-info))
-	:custom
-		(blamer-idle-time 0.3)
-		(blamer-min-offset 70)
-	:custom-face
-		(blamer-face ((t :foreground "#81a1c1"
-	:defer t
-	:background
-		nil
-	:height
-		100
-	:italic
-		t)))
-	:defer t
-)
-
-(use-package company
-	:init
-		(setq company-idle-delay 0)
-		(setq company-minimum-prefix-length 1)
-		(global-company-mode t)
-		(setq company-dabbrev-downcase nil)
-)
+(use-package magit
+	:ensure t
+  :general
+  (general-nmap
+    :prefix "SPC"
+   "m" 'magit)
+	)
 
 (use-package pdf-tools
 	:init
 	(pdf-loader-install)
 	(add-hook 'pdf-view-mode-hook '(lambda () (display-line-numbers-mode -1)))
 	(add-hook 'pdf-view-mode-hook 'pdf-view-midnight-minor-mode)
-	:defer t
-)
-
-
-(use-package image-roll
-	:straight (:type git :host github :repo "dalanicolai/image-roll.el")
-	:defer t
-	:init
 	(add-hook 'pdf-mode-hook #'(lambda () (interactive) (display-line-numbers-mode -1)))
-)
-
-(use-package emms
-	:ensure t
-	:config
-	(setq emms-source-file-default-directory "~/Music/")
-	:init
-	(emms-all)
-	(setq emms-player-list '(emms-player-vlc)
-		emms-info-functions '(emms-info-native))
-)
-
-(use-package rustic
-	:init
-	(add-hook 'rust-mode-hook #'lsp)
 	:defer t
-)
-(use-package rustfmt
-	:defer t
-)
-
-(use-package docker)
-(use-package dockerfile-mode)
+	)
 
 (use-package go-mode
-	:init
-	(setq compile-command "go test -v")
-	(add-hook 'before-save-hook 'gofmt-before-save)
-	(add-hook 'go-mode-hook #'lsp)
-)
-
-(use-package go-playground
-	:init
-	(defun my/go-playground-remove-lsp-workspace () (when-let ((root (lsp-workspace-root))) (lsp-workspace-folders-remove root)))
-	(add-hook 'go-playground-pre-rm-hook #'my/go-playground-remove-lsp-workspace)
+	:custom
+	(compile-command "go test -v")
+	:hook
+	(before-save . gofmt-before-save)
 	:defer t
-)
-
-(use-package gorepl-mode
-	:init
-	(add-hook 'go-mode-hook #'gorepl-mode)
-	:defer t
-)
-
-(use-package yasnippet
-	:init
-	(setq yas-snippet-dirs
-		'("~/Documents/yasnippet-golang")
 	)
-	(yas-global-mode 1)
-
-	(keymap-global-set "M-s" 'yas-insert-snippet)
-)
-
-(yas-minor-mode-on)
 
 (use-package lsp-haskell
-	:init
-	(add-hook 'haskell-mode-hook #'lsp)
-	(add-hook 'haskell-literate-mode-hook #'lsp)
 	:defer t
-)
+	)
 
-;; haskell mode
 (use-package haskell-mode
 	:init
 	(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 	:defer t
+	)
+
+(use-package envrc
+	:hook (after-init . envrc-global-mode))
+
+(use-package erlang
+	:defer t
+  :mode ("\\.erl?$" . erlang-mode)
 )
 
-(use-package flycheck-haskell
-	:defer t
-)
+(use-package rustic
+  :ensure t
+  :mode ("\\.rs?$" . rustic-mode)
+  :config
+  (setq rustic-format-on-save t)
+  (setq rustic-lsp-client 'eglot))
+
+(use-package tree-sitter-indent)
+
+(use-package gleam-mode
+  :load-path "~/.emacs.d/gleam-mode"
+  :mode "\\.gleam\\'"
+  )
